@@ -3699,97 +3699,283 @@ where t1.Name = t2.Name AND t1.Id <> t2.Id
 ========================================================
 01_ADO.NET_Intro_Connected_Mode
 
-            //connectionString : Property = value;property2 = value;
-            SQL Server:
-              -Windows Authentication: "Data Source=server_name;
-                                            Initial Catalog = db_name;
-            Integrated Security = True";
-                - SQL Server Authentication: "Data Source=server_name;
-                                            Initial Catalog = db_name;
-            User ID = login; Password = password";
+ADO.NET - це технологія місточок що звязує SQL і C#
 
-            //connectionString:  Property=value;Property2=value2;
-            string connectionString = @"Data Source = DESKTOP-1LCG8OH\SQLEXPRESS; 
-                                        Initial Catalog = SportShop;
-                                        Integrated Security = true; TrustServerCertificate=True;
+
+//connectionString : Property = value;property2 = value;
+SQL Server:
+  -Windows Authentication: "Data Source=server_name;
+        Initial Catalog = db_name;
+Integrated Security = True";
+    - SQL Server Authentication: "Data Source=server_name;
+        Initial Catalog = db_name;
+User ID = login; Password = password";
+
+//connectionString:  Property=value;Property2=value2;
+string connectionString = @"Data Source = DESKTOP-1LCG8OH\SQLEXPRESS; 
+    Initial Catalog = SportShop;
+    Integrated Security = true; TrustServerCertificate=True;
 ";
-            SqlConnection sqlConnection = new SqlConnection(connectionString);
-            sqlConnection.Open();
-            Console.WriteLine("Connected success!");
+SqlConnection sqlConnection = new SqlConnection(connectionString);
+sqlConnection.Open();
+Console.WriteLine("Connected success!");
 
 
-            #region Execute Non-Query
-            string cmdText = @"INSERT INTO Products
-                              VALUES ('Gloves', 'Equipment', 50, 500, 'Ukraine', 50)";
+#region Execute Non-Query
+string cmdText = @"INSERT INTO Products
+      VALUES ('Gloves', 'Equipment', 50, 500, 'Ukraine', 50)";
 
-            SqlCommand command = new SqlCommand(cmdText, sqlConnection);
-            command.CommandTimeout = 5; // default - 30sec
+SqlCommand command = new SqlCommand(cmdText, sqlConnection);
+command.CommandTimeout = 5; // default - 30sec
 
 
-            ////// ExecuteNonQuery - виконує команду яка не повертає результат 
-            /////(insert, update, delete...),
-            //////але метод повертає кількітсь рядків, які були задіяні
-            int rows = command.ExecuteNonQuery();
+	////// ExecuteNonQuery - виконує команду яка не повертає результат 
+/////(insert, update, delete...),
+//////але метод повертає кількітсь рядків, які були задіяні
+int rows = command.ExecuteNonQuery();
 
-            Console.WriteLine(rows + " rows affected!");
-            #endregion
-            #region Execute Scalar
-            string cmdText = @"select AVG(Price) from Products";
+Console.WriteLine(rows + " rows affected!");
+#endregion
+#region Execute Scalar
+string cmdText = @"select AVG(Price) from Products";
 
-            SqlCommand command = new SqlCommand(cmdText, sqlConnection);
+SqlCommand command = new SqlCommand(cmdText, sqlConnection);
 
-            // Execute Scalar - виконує команду, яка повертає одне значення
-            int res = (int)command.ExecuteScalar();
+	// Execute Scalar - виконує команду, яка повертає одне значення
+int res = (int)command.ExecuteScalar();
 
-            Console.WriteLine("Result: " + res);
-            #endregion
-            int id = 2;
-            #region Execute Reader
-            string cmdText = $@"select * from Products
-                              where Id = '{id}'";
+Console.WriteLine("Result: " + res);
+#endregion
+int id = 2;
+#region Execute Reader
+string cmdText = $@"select * from Products
+      where Id = '{id}'";
 
-            SqlCommand command = new SqlCommand(cmdText, sqlConnection);
+SqlCommand command = new SqlCommand(cmdText, sqlConnection);
 
-            //// ExecuteReader - виконує команду select та повертає результат у вигляді
-            //// DbDataReader
-            SqlDataReader reader = command.ExecuteReader();
+	//// ExecuteReader - виконує команду select та повертає результат у вигляді
+	//// DbDataReader
+SqlDataReader reader = command.ExecuteReader();
 
-            Console.OutputEncoding = Encoding.UTF8;
+Console.OutputEncoding = Encoding.UTF8;
 
-            //// відображається назви всіх колонок таблиці
-            for (int i = 0; i < reader.FieldCount; i++)
-            {
-                Console.Write($" {reader.GetName(i),14}");
-            }
-            Console.WriteLine("\n---------------------------------------------------------------------------------------------------------------------");
+//// відображається назви всіх колонок таблиці
+for (int i = 0; i < reader.FieldCount; i++)
+{
+    Console.Write($" {reader.GetName(i),14}");
+}
+Console.WriteLine("\n---------------------------------------------------------------------------------------------------------------------");
 
-            //////// відображаємо всі значення кожного рядка
-            while (reader.Read())
-            {
+//////// відображаємо всі значення кожного рядка
+while (reader.Read())
+{
 
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    Console.Write($" {reader[i],14} ");
-                }
-                Console.WriteLine();
-            }
+    for (int i = 0; i < reader.FieldCount; i++)
+    {
+        Console.Write($" {reader[i],14} ");
+    }
+    Console.WriteLine();
+}
 
-            reader.Close();
-            #endregion
+reader.Close();
+#endregion
 
-            sqlConnection.Close();
+sqlConnection.Close();
 			
 			
 			
 			
 ========================================================
-02_
+02_CRUD_Interface
+
+	CRUD Interface - create read update delete
+
+	Підєднаний режим:  connected mode
+Суть підєднаного режиму роботи з базою даних полягає в тому що ми на початку створюємо обєкт що буде працювати з юазою даних і там підключаємося до сервера
+Дала ми виконуємо create read update delete
+Коли вже не потрібен, ми закриваємо конектіон
+
+	Відєднаний режим  disconnected mode
+Суть відєднаного режиму роботи полягає в тому що ми на початку кожної дії підключилися до бази даних, дію виконали і відключилися від бази
+
+﻿using System.Data.SqlClient;
+using System.Text;
+using System.Xml.Linq;
+using System.Xml;
+
+namespace _02_CRUD_Interface
+{
+    class SportShopDb: IDisposable
+    {
+        private SqlConnection sqlConnection;
+      
+        public SportShopDb(string connectionString)
+        {
+            sqlConnection = new SqlConnection(connectionString);
+            sqlConnection.Open();
+        }
+        //C       R    U       D 
+        //Create Read Update Delede
+        public void Create_As_Insert(Product product) 
+        {
+            string cmdText = $@"INSERT INTO Products
+                              VALUES ('{product.Name}', 
+                                      '{product.Type}',
+                                       {product.Quantity}, 
+                                       {product.Cost}, 
+                                      '{product.Producer}', 
+                                       {product.Price})";
+
+            SqlCommand command = new SqlCommand(cmdText, sqlConnection);
+            command.CommandTimeout = 5; // default - 30sec
+           
+            int rows = command.ExecuteNonQuery();
+            Console.WriteLine(rows + " rows affected!");
+        }
+        public List<Product> Read_Get_All() 
+        {
+            string cmdText = $@"select * from Products";
+
+            SqlCommand command = new SqlCommand(cmdText, sqlConnection);
+             SqlDataReader reader = command.ExecuteReader();
+            Console.OutputEncoding = Encoding.UTF8;
+
+            List<Product> products = new List<Product>();   
+         
+            while (reader.Read())
+            {
+                products.Add(
+                    new Product()
+                    {
+                        Id = (int)reader[0],
+                        Name = (string)reader[1],
+                        Type = (string)reader[2],
+                        Quantity = (int)reader[3],
+                        Cost = (int)reader[4],
+                        Producer = (string)reader[5],
+                        Price = (int)reader[6]
+                    });
+
+             
+            }
+
+            reader.Close();
+            return products;    
+        }
+        public Product GetOne(int id)
+        {
+            string cmdText = $@"select * from Products where Id = {id}";
+
+            SqlCommand command = new SqlCommand(cmdText, sqlConnection);
+            SqlDataReader reader = command.ExecuteReader();
+            Console.OutputEncoding = Encoding.UTF8;
+
+            Product product = new Product();
+            while (reader.Read())
+            {
+                product.Id = (int)reader[0];
+                product.Name = (string)reader[1];
+                product.Type = (string)reader[2];
+                product.Quantity = (int)reader[3];
+                product.Cost = (int)reader[4];
+                product.Producer = (string)reader[5];
+                product.Price = (int)reader[6];                  
+
+            }
+
+            reader.Close();
+            return product;
+        }
+        public void Update(Product product) 
+        {
+            string cmdText = $@"UPDATE Products
+                              SET Name ='{product.Name}', 
+                                  TypeProduct ='{product.Type}', 
+                                  Quantity ={product.Quantity}, 
+                                  CostPrice ={product.Cost}, 
+                                  Producer ='{product.Producer}', 
+                                  Price ={product.Price}
+                                  where Id = {product.Id}";
+
+            SqlCommand command = new SqlCommand(cmdText, sqlConnection);
+            command.CommandTimeout = 5; // default - 30sec
+
+            command.ExecuteNonQuery();
+
+        }
+        public void Delete(int id) 
+        {
+            string cmdText = $@"delete Products where Id = {id}";
+
+            SqlCommand command = new SqlCommand(cmdText, sqlConnection);       
+            command.ExecuteNonQuery();
+        }
+
+        public void Dispose()
+        {
+            sqlConnection.Close();  
+        }
+
+
+    }
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            string connectionString = @"Data Source = DESKTOP-1LCG8OH\SQLEXPRESS; 
+                                        Initial Catalog = SportShop;
+                                        Integrated Security = true; 
+                                        TrustServerCertificate=True;";
+
+           
+           
+            Product product = new Product()
+            {
+                 Name = "Кроси",
+                 Type = "Взуття",
+                 Quantity = 4,
+                 Cost = 40000,
+                 Producer = "Італія",
+                 Price = 30000
+            };
+           // product.Cost = 5000;
+            using (SportShopDb shopDb = new SportShopDb(connectionString))
+            {
+                //shopDb.Create_As_Insert(product);
+
+                var products = shopDb.Read_Get_All();
+                foreach (var p in products)
+                {
+                    Console.WriteLine(p.ToString());
+                }
+
+                Product p1 = shopDb.GetOne(56);
+                Console.WriteLine(p1.Name + "   " + p1.Cost);
+                p1.Cost -= 15000;
+                Console.WriteLine(p1.Name + "   " + p1.Cost);
+
+                shopDb.Update(p1);
+
+                products = shopDb.Read_Get_All();
+                foreach (var p in products)
+                {
+                    Console.WriteLine(p.ToString());
+                }
+
+
+
+
+            }//shopDb.Dispose()
 
 
 
 
 
+        }
+    }
+}
 
+========================================================
 
 
 
