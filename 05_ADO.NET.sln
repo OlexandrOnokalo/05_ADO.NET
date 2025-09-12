@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "01_ADO.NET_Intro_Connected_Mode", "01_ADO.NET_Intro_Connected_Mode\01_ADO.NET_Intro_Connected_Mode.csproj", "{D4AA94F9-F7DB-42E0-BF34-CA332F3F1558}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "02_CRUD_Interface", "02_CRUD_Interface\02_CRUD_Interface.csproj", "{28E748ED-3CE7-492B-B937-B8126E8AC195}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D4AA94F9-F7DB-42E0-BF34-CA332F3F1558}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4AA94F9-F7DB-42E0-BF34-CA332F3F1558}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4AA94F9-F7DB-42E0-BF34-CA332F3F1558}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28E748ED-3CE7-492B-B937-B8126E8AC195}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28E748ED-3CE7-492B-B937-B8126E8AC195}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28E748ED-3CE7-492B-B937-B8126E8AC195}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28E748ED-3CE7-492B-B937-B8126E8AC195}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
