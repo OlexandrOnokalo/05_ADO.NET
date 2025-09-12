@@ -3976,11 +3976,35 @@ namespace _02_CRUD_Interface
 }
 
 ========================================================
+03_
 
+SQL Injection
 
+select * from Products where Name = '{name}';
 
+замість імені вставляємо і імя і додаткову команду, -- в кінці щоб закоментити другу '
 
+select * from Products where Name = 'Ball'; drop database SportShop
 
+Для захисту ми маємо вказати що нейм стрінга
+	
+	
+	Get_By_Name ????
+	
+string command ???????????????????????
+command.Parameters.Add()?????   - вказуємо що це нварчар, 
+
+другій варінт:
+
+???????????
+
+третій варіант
+
+public void insert або Update
+
+ values (@name,@type......
+ 
+ 
 
 
 
