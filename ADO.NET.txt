@@ -3702,74 +3702,58 @@ where t1.Name = t2.Name AND t1.Id <> t2.Id
 ADO.NET - це технологія місточок що звязує SQL і C#
 
 
-//connectionString : Property = value;property2 = value;
-SQL Server:
-  -Windows Authentication: "Data Source=server_name;
-        Initial Catalog = db_name;
-Integrated Security = True";
-    - SQL Server Authentication: "Data Source=server_name;
-        Initial Catalog = db_name;
-User ID = login; Password = password";
-
-//connectionString:  Property=value;Property2=value2;
 string connectionString = @"Data Source = DESKTOP-1LCG8OH\SQLEXPRESS; 
     Initial Catalog = SportShop;
-    Integrated Security = true; TrustServerCertificate=True;
-";
+    Integrated Security = true; TrustServerCertificate=True;";
+	
+
 SqlConnection sqlConnection = new SqlConnection(connectionString);
-sqlConnection.Open();
+sqlConnection.Open();          - підключаємо до сервера
 Console.WriteLine("Connected success!");
 
 
-#region Execute Non-Query
+  Execute Non-Query  виконати дію (insert, update etc), не отримавши назад таблицю, але метод повертає кількітсь рядків, які були задіяні
+  
 string cmdText = @"INSERT INTO Products
       VALUES ('Gloves', 'Equipment', 50, 500, 'Ukraine', 50)";
 
 SqlCommand command = new SqlCommand(cmdText, sqlConnection);
-command.CommandTimeout = 5; // default - 30sec
-
-
-	////// ExecuteNonQuery - виконує команду яка не повертає результат 
-/////(insert, update, delete...),
-//////але метод повертає кількітсь рядків, які були задіяні
 int rows = command.ExecuteNonQuery();
 
-Console.WriteLine(rows + " rows affected!");
-#endregion
-#region Execute Scalar
-string cmdText = @"select AVG(Price) from Products";
 
+	Execute Scalar - виконує команду, яка повертає одне значення
+	
+string cmdText = @"select AVG(Price) from Products";
 SqlCommand command = new SqlCommand(cmdText, sqlConnection);
 
-	// Execute Scalar - виконує команду, яка повертає одне значення
 int res = (int)command.ExecuteScalar();
 
 Console.WriteLine("Result: " + res);
-#endregion
+
+
+
+
 int id = 2;
-#region Execute Reader
 string cmdText = $@"select * from Products
       where Id = '{id}'";
 
 SqlCommand command = new SqlCommand(cmdText, sqlConnection);
 
-	//// ExecuteReader - виконує команду select та повертає результат у вигляді
-	//// DbDataReader
-SqlDataReader reader = command.ExecuteReader();
+	//// ExecuteReader - виконує команду select та повертає результат у вигляді обєкту DbDataReader
 
+SqlDataReader reader = command.ExecuteReader();
 Console.OutputEncoding = Encoding.UTF8;
 
-//// відображається назви всіх колонок таблиці
+    //// відображається назви всіх колонок таблиці
 for (int i = 0; i < reader.FieldCount; i++)
 {
     Console.Write($" {reader.GetName(i),14}");
 }
 Console.WriteLine("\n---------------------------------------------------------------------------------------------------------------------");
 
-//////// відображаємо всі значення кожного рядка
+     //////// відображаємо всі значення кожного рядка
 while (reader.Read())
 {
-
     for (int i = 0; i < reader.FieldCount; i++)
     {
         Console.Write($" {reader[i],14} ");
@@ -3778,13 +3762,9 @@ while (reader.Read())
 }
 
 reader.Close();
-#endregion
-
 sqlConnection.Close();
 			
-			
-			
-			
+				
 ========================================================
 02_CRUD_Interface
 
@@ -3798,7 +3778,9 @@ sqlConnection.Close();
 	Відєднаний режим  disconnected mode
 Суть відєднаного режиму роботи полягає в тому що ми на початку кожної дії підключилися до бази даних, дію виконали і відключилися від бази
 
-﻿using System.Data.SqlClient;
+
+
+using System.Data.SqlClient;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml;
@@ -3814,8 +3796,10 @@ namespace _02_CRUD_Interface
             sqlConnection = new SqlConnection(connectionString);
             sqlConnection.Open();
         }
+
         //C       R    U       D 
         //Create Read Update Delede
+
         public void Create_As_Insert(Product product) 
         {
             string cmdText = $@"INSERT INTO Products
@@ -3984,25 +3968,61 @@ select * from Products where Name = '{name}';
 
 замість імені вставляємо і імя і додаткову команду, -- в кінці щоб закоментити другу '
 
-select * from Products where Name = 'Ball'; drop database SportShop
+Виходить:
+
+select * from Products where Name = 'Ball'; drop database SportShop; --'
 
 Для захисту ми маємо вказати що нейм стрінга
+
+
+----------------Варіант 1:
+
+public List<Product> Get_By_Name(string _user_name)	
+{
+    string cmdText = $@"select * from Products where Name = @name";
+    SqlCommand command = new SqlCommand(cmdText, sqlConnection);	
+	command.Parameters.Add("name", System.Data.SqlDbType.NVarChar).Value = _user_name;
 	
+-------------Варіант 2:
 	
-	Get_By_Name ????
+    SqlParameter parameter = new SqlParameter
+    {
+        ParameterName = "name",
+        SqlDbType = System.Data.SqlDbType.NVarChar,
+        Value = _user_name
+    };
+    command.Parameters.Add(parameter);  
+
+    SqlDataReader reader = command.ExecuteReader();
+    return GetProductsByQuery(reader);
+}	
 	
-string command ???????????????????????
-command.Parameters.Add()?????   - вказуємо що це нварчар, 
+в іншому методі:
 
-другій варінт:
+        public void Update(Product product) 
+        {
+            string cmdText = $@"UPDATE Products
+                              SET Name =@name, 
+                                  TypeProduct =@type, 
+                                  Quantity =@quantity, 
+                                  CostPrice =@cost, 
+                                  Producer =@producer, 
+                                  Price =@price
+                                  where Id = {product.Id}";
 
-???????????
+            SqlCommand command = new SqlCommand(cmdText, sqlConnection);
+            command.Parameters.AddWithValue("name", product.Name);
+            command.Parameters.AddWithValue("type", product.Type);
+            command.Parameters.AddWithValue("quantity", product.Quantity);
+            command.Parameters.AddWithValue("cost", product.Cost);
+            command.Parameters.AddWithValue("producer", product.Producer);
+            command.Parameters.AddWithValue("price", product.Price);
+            command.CommandTimeout = 5; // default - 30sec
 
-третій варіант
+            command.ExecuteNonQuery();
 
-public void insert або Update
-
- values (@name,@type......
+        }
+	
  
  
 
