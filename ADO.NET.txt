@@ -4023,10 +4023,16 @@ public List<Product> Get_By_Name(string _user_name)
 
         }
 	
- 
- 
+	
+	WPF Application
+	
+	MainWindow.xaml - конструктор, разметка там  и тд
+	MainWindow.xaml.cs   - код
+	
 
-
+	F7 - перейти с конструктора странички к коду
+	F12 - перестий с партиал класса к его основе
+	
 
 
 
