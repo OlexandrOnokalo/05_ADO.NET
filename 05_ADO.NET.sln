@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "01_ADO.NET_Intro_Connected_
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "02_CRUD_Interface", "02_CRUD_Interface\02_CRUD_Interface.csproj", "{28E748ED-3CE7-492B-B937-B8126E8AC195}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "03_SportShopUA", "03_SportShopUA\03_SportShopUA.csproj", "{53C36234-641E-422D-B202-E859DB21E6F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "03_data_access", "03_data_access\03_data_access.csproj", "{59B082F1-77CF-46EC-849F-E2976DA15A49}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{28E748ED-3CE7-492B-B937-B8126E8AC195}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28E748ED-3CE7-492B-B937-B8126E8AC195}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28E748ED-3CE7-492B-B937-B8126E8AC195}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53C36234-641E-422D-B202-E859DB21E6F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53C36234-641E-422D-B202-E859DB21E6F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53C36234-641E-422D-B202-E859DB21E6F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53C36234-641E-422D-B202-E859DB21E6F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59B082F1-77CF-46EC-849F-E2976DA15A49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59B082F1-77CF-46EC-849F-E2976DA15A49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59B082F1-77CF-46EC-849F-E2976DA15A49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59B082F1-77CF-46EC-849F-E2976DA15A49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
