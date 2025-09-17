@@ -4033,6 +4033,48 @@ public List<Product> Get_By_Name(string _user_name)
 	F7 - перейти с конструктора странички к коду
 	F12 - перестий с партиал класса к его основе
 	
+========================================================
+05_Entity_Framework - конвертує між C# і SQL базою даних
+
+ORM - object relational mapping  
+
+
+Database First - за SQL to C#
+
+Model First - from data model (діаграми) to SQL
+
+	Ми використовуємо:
+Code First  - ми пишемо код: класи, і він по цим класам формує БД
+
+
+
+
+data annotation = Attribute
+
+
+Робимо клас для доступу до бази даних, що дає можливість CRUD 
+	add new item --> class --> AirportDBcontext
+
+Класс AirportDBcontext:DbContext - підключення і відключення до сервера, і методи CRUD (для внесення змін)
+
+
+
+
+
+там робимо  
+public DBSet<Clients> Clients {get;set}   - замість Ліста, власне таблицю клієнтів
+
+
+
+
+ENtities - сущности, обєкти, влане класи
+
+створюємо клас пилот, літак, і польот
+
+Коли робиш 1 до *, той один створюємо як обєкт і ІД того обєкта
+а * - це вже ICollection<Clients>
+
+
 
 
 
