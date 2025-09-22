@@ -4048,9 +4048,6 @@ Model First - from data model (діаграми) to SQL
 	Ми використовуємо:
 Code First  - ми пишемо код: класи, і він по цим класам формує БД
 
-
-
-
 data annotation = Attribute
 
 
@@ -4060,13 +4057,8 @@ data annotation = Attribute
 Класс AirportDBcontext:DbContext - підключення і відключення до сервера, і методи CRUD (для внесення змін)
 
 
-
-
-
 там робимо  
 public DBSet<Clients> Clients {get;set}   - замість Ліста, власне таблицю клієнтів
-
-
 
 
 ENtities - сущности, обєкти, влане класи, які відповідають за звязок з базою данних
@@ -4076,8 +4068,527 @@ ENtities - сущности, обєкти, влане класи, які від�
 Коли робиш 1 до *, той один створюємо як обєкт і ІД того обєкта
 а * - це вже ICollection<Clients>
 
+
+	 ______         _    _  _
+	|  ____|       | |  (_)| |
+	| |__    _ __  | |_  _ | |_  _   _
+	|  __|  | '_ \ | __|| || __|| | | |
+	| |____ | | | || |_ | || |_ | |_| |
+	|______||_| |_| \__||_| \__| \__, |
+								  __/ |
+								 |___/
+ ______                                                       _
+|  ____|                                                     | |
+| |__    _ __   __ _  _ __ ___    ___ __      __  ___   _ __ | | __
+|  __|  | '__| / _` || '_ ` _ \  / _ \\ \ /\ / / / _ \ | '__|| |/ /
+| |     | |   | (_| || | | | | ||  __/ \ V  V / | (_) || |   |   <
+|_|     |_|    \__,_||_| |_| |_| \___|  \_/\_/   \___/ |_|   |_|\_\
+
+
+
+
+	Сущности (Entities)
+Сначала создаются классы-сущности, такие как Album, Artist, Genre, Track, Country, Playlist, PlaylistTrack и другие. Каждый класс соответствует отдельной таблице в базе данных и описывает структуру данных, а также связи между таблицами (например, коллекции, навигационные свойства).
+
+
+
+	Звязок 1 до багатьох (1...*) між Category та Playlist
+
+є дві ентіті, плейліст
+
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace _05_Entity_Framework.Entytis
+{
+    [Table("Playlists")]
+    class Playlist
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [Required, MaxLength(200)]
+        public string Name { get; set; }
+
+        public int? CategoryId { get; set; }
+        public Category Category { get; set; }
+
+        public ICollection<PlaylistTrack> PlaylistTracks { get; set; }
+    }
+}
+
+
+і категорія
+
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace _05_Entity_Framework.Entytis
+{
+    [Table("Categories")]
+    class Category
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [Required, MaxLength(100)]
+        public string Name { get; set; }
+
+        public ICollection<Playlist> Playlists { get; set; }
+    }
+}
+
+1.1. Опис у класах
+•	У класі Category є властивість:
+
+	public ICollection<Playlist> Playlists { get; set; }
+
+Це означає, що **одна категорія може містити багато плейлістів**.
+
+•	У класі Playlist є властивості:
+
+	public int? CategoryId { get; set; }
+    public Category Category { get; set; }
+
+Це означає, що **кожен плейліст належить до однієї категорії** (або не має категорії, бо `CategoryId` може бути null).
+
+
+
+
+
+
+	Крок 2. Зв’язок "багато-до-багатьох" (1...*) між Playlist та Track через PlaylistTrack
+
+Playlist є вище, а трек ось:
+
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace _05_Entity_Framework.Entytis
+{
+    [Table("Tracks")]
+    class Track
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [Required, MaxLength(200)]
+        public string Title { get; set; }
+
+        public int AlbumId { get; set; }
+        public Album Album { get; set; }
+
+
+        public int DurationSeconds { get; set; }
+
+        public int Rating { get; set; }
+
+        public int Listens { get; set; }
+        [MaxLength(200)]
+        public string? Lyrics { get; set; }
+
+        public ICollection<PlaylistTrack> PlaylistTracks { get; set; }
+    }
+}
+
+
+2.1. Опис у класах
+
+•	Кожен плейліст може містити багато записів PlaylistTrack (тобто багато треків).
+
+public ICollection<PlaylistTrack> PlaylistTracks { get; set; }
+
+•	Кожен трек може бути у багатьох плейлістах.
+
+public ICollection<PlaylistTrack> PlaylistTracks { get; set; }
+
+
+
+
+А це проміжна таблиця, яка містить зовнішні ключі до Playlist та Track.
+
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace _05_Entity_Framework.Entytis
+{
+    [Table("PlaylistTracks")]
+    class PlaylistTrack
+    {
+        public int PlaylistId { get; set; }
+        public Playlist Playlist { get; set; }
+
+        public int TrackId { get; set; }
+        public Track Track { get; set; }
+    }
+}
+
+2.2. Як це виглядає у базі даних
+•	Таблиця PlaylistTracks має два стовпці: PlaylistId та TrackId.
+•	Вони разом утворюють складний (комбінований) ключ.
+•	Кожен рядок у цій таблиці означає, що певний трек входить у певний плейліст.
+
+
+
+2.3. Як працювати з цим зв’язком у коді
+Отримати всі треки певного плейліста:
+
+var playlist = context.Playlists
+    .Include(p => p.PlaylistTracks)
+    .ThenInclude(pt => pt.Track)
+    .FirstOrDefault(p => p.Id == playlistId);
+
+foreach (var pt in playlist.PlaylistTracks)
+{
+    Console.WriteLine(pt.Track.Title);
+}
+
+
+
+Отримати всі плейлісти, в яких є певний трек:
+
+var track = context.Tracks
+    .Include(t => t.PlaylistTracks)
+    .ThenInclude(pt => pt.Playlist)
+    .FirstOrDefault(t => t.Id == trackId);
+
+foreach (var pt in track.PlaylistTracks)
+{
+    Console.WriteLine(pt.Playlist.Name);
+}
+
+
+
+Додати трек у плейліст:
+
+var playlistTrack = new PlaylistTrack
+{
+    PlaylistId = playlistId,
+    TrackId = trackId
+};
+context.PlaylistTracks.Add(playlistTrack);
+context.SaveChanges();
+
+
+
 ========================================================
-06_Migration
+06_Migration 
+ ______         _    _  _
+|  ____|       | |  (_)| |
+| |__    _ __  | |_  _ | |_  _   _
+|  __|  | '_ \ | __|| || __|| | | |
+| |____ | | | || |_ | || |_ | |_| |
+|______||_| |_| \__||_| \__| \__, |
+                              __/ |
+                             |___/
+ __  __  _                      _    _
+|  \/  |(_)                    | |  (_)
+| \  / | _   __ _  _ __   __ _ | |_  _   ___   _ __
+| |\/| || | / _` || '__| / _` || __|| | / _ \ | '_ \
+| |  | || || (_| || |   | (_| || |_ | || (_) || | | |
+|_|  |_||_| \__, ||_|    \__,_| \__||_| \___/ |_| |_|
+             __/ |
+            |___/
+
+
+	1. Створення класу контексту даних (DbContext)
+	
+Створіть новий файл, наприклад, MusicDbContext.cs.
+Він має наслідуватися від DbContext:
+
+
+using _05_Entity_Framework.Entytis;
+using Microsoft.EntityFrameworkCore;
+
+namespace _05_Entity_Framework
+{
+    internal class MusicDbContext : DbContext
+    {
+        // Конструктор класу  -  це по суті лишнє, просто іноді треба використати для для ініціалізації або тестування
+		
+        public MusicDbContext()
+        {
+            // Можна використати для ініціалізації або тестування:
+            // this.Database.EnsureDeleted();
+            // this.Database.EnsureCreated();
+        }
+
+
+
+
+        // Налаштування підключення до бази даних
+		
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseSqlServer(@"Data Source=(localDB)\MSSQLLocalDb;
+                                        Initial Catalog=MusicAppDb;
+                                        Integrated Security=True;
+                                        Connect Timeout=5;
+                                        Encrypt=False;TrustServerCertificate=True;
+                                        Application Intent=ReadWrite;Multi Subnet Failover=False");
+        }
+		
+		
+		
+		
+		
+		
+		
+
+        // ОПИСУЄМО СТРУКТУРУ МОДЕЛІ, ЗВ'ЯЗКИ ТА ПОЧАТКОВІ ДАНІ
+		
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Складний ключ для PlaylistTrack  - це звідна таблиця для звязку плейлістів з треками
+			
+            modelBuilder.Entity<PlaylistTrack>().HasKey(pt => new { pt.PlaylistId, pt.TrackId });
+
+            // Початкові дані для Country
+            modelBuilder.Entity<Country>().HasData(
+                new Country { Id = 1, Name = "USA" },
+                new Country { Id = 2, Name = "UK" },
+                new Country { Id = 3, Name = "Sweden" },
+                new Country { Id = 4, Name = "Ukraine" },
+                new Country { Id = 5, Name = "Canada" }
+            );
+
+            // Початкові дані для Genre
+            modelBuilder.Entity<Genre>().HasData(
+                new Genre { Id = 1, Name = "Rock" },
+                new Genre { Id = 2, Name = "Pop" },
+                new Genre { Id = 3, Name = "Jazz" },
+                new Genre { Id = 4, Name = "Classical" },
+                new Genre { Id = 5, Name = "Electronic" },
+                new Genre { Id = 6, Name = "HipHop" }
+            );
+
+            // Початкові дані для Artist
+            modelBuilder.Entity<Artist>().HasData(
+                new Artist { Id = 1, FirstName = "John", LastName = "Smith", CountryId = 1 },
+                new Artist { Id = 2, FirstName = "Emma", LastName = "Brown", CountryId = 2 },
+                new Artist { Id = 3, FirstName = "Max", LastName = "Johansson", CountryId = 3 },
+                new Artist { Id = 4, FirstName = "Oleg", LastName = "Ivanov", CountryId = 4 },
+                new Artist { Id = 5, FirstName = "Alice", LastName = "Green", CountryId = 5 }
+            );
+
+            // Початкові дані для Album
+            modelBuilder.Entity<Album>().HasData(
+                new Album { Id = 1, Title = "Greatest Hits", ArtistId = 1, Year = 2010, GenreId = 1 },
+                new Album { Id = 2, Title = "Soft Sounds", ArtistId = 2, Year = 2015, GenreId = 2 },
+                new Album { Id = 3, Title = "Nordic Beats", ArtistId = 3, Year = 2018, GenreId = 5 },
+                new Album { Id = 4, Title = "Folk Tales", ArtistId = 4, Year = 2012, GenreId = 4 },
+                new Album { Id = 5, Title = "Green Days", ArtistId = 5, Year = 2020, GenreId = 2 },
+                new Album { Id = 6, Title = "Smooth Jazz", ArtistId = 2, Year = 2016, GenreId = 3 }
+            );
+
+            // Початкові дані для Track
+            modelBuilder.Entity<Track>().HasData(
+                new Track { Id = 1, Title = "Hit One", AlbumId = 1, DurationSeconds = 240 },
+                new Track { Id = 2, Title = "Hit Two", AlbumId = 1, DurationSeconds = 200 },
+                new Track { Id = 3, Title = "Soft Intro", AlbumId = 2, DurationSeconds = 180 },
+                new Track { Id = 4, Title = "Soft Ballad", AlbumId = 2, DurationSeconds = 210 },
+                new Track { Id = 5, Title = "Nordic Storm", AlbumId = 3, DurationSeconds = 300 },
+                new Track { Id = 6, Title = "Nordic Calm", AlbumId = 3, DurationSeconds = 260 },
+                new Track { Id = 7, Title = "Folk Song 1", AlbumId = 4, DurationSeconds = 220 },
+                new Track { Id = 8, Title = "Folk Song 2", AlbumId = 4, DurationSeconds = 195 },
+                new Track { Id = 9, Title = "Green Day 1", AlbumId = 5, DurationSeconds = 230 },
+                new Track { Id = 10, Title = "Green Day 2", AlbumId = 5, DurationSeconds = 205 },
+                new Track { Id = 11, Title = "Smooth Flow", AlbumId = 6, DurationSeconds = 250 },
+                new Track { Id = 12, Title = "Jazz Night", AlbumId = 6, DurationSeconds = 275 }
+            );
+
+            // Початкові дані для Category
+            modelBuilder.Entity<Category>().HasData(
+                new Category { Id = 1, Name = "Workout" },
+                new Category { Id = 2, Name = "Chill" },
+                new Category { Id = 3, Name = "Party" },
+                new Category { Id = 4, Name = "Focus" }
+            );
+
+            // Початкові дані для Playlist
+            modelBuilder.Entity<Playlist>().HasData(
+                new Playlist { Id = 1, Name = "Morning Boost", CategoryId = 1 },
+                new Playlist { Id = 2, Name = "Evening Chill", CategoryId = 2 },
+                new Playlist { Id = 3, Name = "Party Hits", CategoryId = 3 }
+            );
+
+            // Початкові дані для PlaylistTrack
+            modelBuilder.Entity<PlaylistTrack>().HasData(
+                new PlaylistTrack { PlaylistId = 1, TrackId = 1 },
+                new PlaylistTrack { PlaylistId = 1, TrackId = 5 },
+                new PlaylistTrack { PlaylistId = 1, TrackId = 9 },
+                new PlaylistTrack { PlaylistId = 2, TrackId = 3 },
+                new PlaylistTrack { PlaylistId = 2, TrackId = 6 },
+                new PlaylistTrack { PlaylistId = 2, TrackId = 11 },
+                new PlaylistTrack { PlaylistId = 2, TrackId = 12 },
+                new PlaylistTrack { PlaylistId = 3, TrackId = 2 },
+                new PlaylistTrack { PlaylistId = 3, TrackId = 4 },
+                new PlaylistTrack { PlaylistId = 3, TrackId = 10 },
+                new PlaylistTrack { PlaylistId = 3, TrackId = 5 }
+            );
+        }
+
+
+
+        // DbSet — це властивості для кожної сутності, які дозволяють працювати з таблицями
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<Artist> Artists { get; set; }
+        public DbSet<Genre> Genres { get; set; }
+        public DbSet<Album> Albums { get; set; }
+        public DbSet<Track> Tracks { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Playlist> Playlists { get; set; }
+        public DbSet<PlaylistTrack> PlaylistTracks { get; set; }
+    }
+}
+
+
+
+		2. Встановлення NuGet-пакетів
+	
+2.1. Відкрийте менеджер пакетів NuGet
+	У Visual Studio перейдіть у меню Tools > NuGet Package Manager > Manage NuGet Packages for Solution.
+
+2.2. Знайдіть потрібні пакети
+	У вкладці "Browse" (Пошук) введіть у пошуковому полі:
+	Microsoft.EntityFrameworkCore.SqlServer
+	Microsoft.EntityFrameworkCore.Tools
+
+2.3. Встановіть пакети
+	Виберіть ваш проект (наприклад, 05_Entity_Framework) у списку проектів.
+	Натисніть кнопку "Install" (Встановити) для кожного пакета.
+	Підтвердіть встановлення та прийміть ліцензію.
+2.4. Перевірте, що пакети додані
+•	Перейдіть у вкладку "Installed" (Встановлені) та переконайтеся, що обидва пакети є у списку.
+
+
+---
+2.5. Альтернативний спосіб — через консоль диспетчера пакетів
+•	Відкрийте Tools > NuGet Package Manager > Package Manager Console.
+•	Виконайте команди по черзі:
+
+Install-Package Microsoft.EntityFrameworkCore.SqlServer
+Install-Package Microsoft.EntityFrameworkCore.Tools
+
+
+
+
+			3. Створення та застосування міграції
+			
+3.1. Відкрийте консоль диспетчера пакетів
+•	У Visual Studio перейдіть у меню Tools > NuGet Package Manager > Package Manager Console.
+
+3.2. Створіть першу міграцію
+•	У консолі введіть команду:
+
+Add-Migration Init
+
+•	Пояснення:
+•	Init — це назва міграції (можна обрати будь-яку, наприклад, InitialCreate).
+•	Після виконання команди у вашій папці Migrations з’явиться файл міграції (наприклад, 20250919141323_Init.cs) та оновиться файл MusicDbContextModelSnapshot.cs.
+
+3.3. Перевірте створену міграцію
+•	Відкрийте файл міграції у папці Migrations.
+•	У ньому буде описано, які таблиці та зв’язки створюються на основі ваших сутностей та конфігурації.
+
+3.4. Застосуйте міграцію до бази даних
+•	У консолі введіть команду:
+
+Update-Database
+
+•	Пояснення:
+•	Ця команда створить базу даних (якщо її ще немає) та всі таблиці згідно з вашою моделлю.
+•	Якщо ви додали початкові дані через HasData, вони також будуть додані у відповідні таблиці.
+
+3.5. Перевірте базу даних
+•	Відкрийте SQL Server Object Explorer (View > SQL Server Object Explorer).
+•	Знайдіть вашу базу даних (MusicAppDb).
+•	Переконайтеся, що всі таблиці створені, а початкові дані додані.
+
+3.6. Додаткові міграції
+•	Якщо ви змінюєте моделі (наприклад, додаєте нову властивість), створіть нову міграцію:
+
+Add-Migration New_Variables
+		і застосовуєм
+Update-Database
+
+
+
+			4. Робота з даними через MusicDbContext
+			
+	роботу з даними через контекст у коді (наприклад, у файлі Program.cs). Це дозволить додавати, читати, змінювати та видаляти записи у вашій базі даних.		
+
+
+Program.cs
+
+	4.1. Додавання нового запису
+
+using var context = new MusicDbContext();
+
+// Створюємо новий плейліст
+var playlist = new Playlist
+{
+    Name = "My Favorite Songs",
+    CategoryId = 2 // наприклад, "Chill"
+};
+
+// Додаємо плейліст у базу
+context.Playlists.Add(playlist);
+context.SaveChanges();
+
+	4.2. Отримання даних (читання)
+
+// Отримати всі плейлісти
+var playlists = context.Playlists.ToList();
+
+foreach (var pl in playlists)
+{
+    Console.WriteLine($"{pl.Id}: {pl.Name}");
+}
+
+	4.3. Зміна даних
+	
+// Знайти плейліст за Id
+var playlistToUpdate = context.Playlists.FirstOrDefault(p => p.Id == 1);
+if (playlistToUpdate != null)
+{
+    playlistToUpdate.Name = "Updated Playlist Name";
+    context.SaveChanges();
+}
+
+	4.4. Видалення даних
+
+// Знайти плейліст за Id
+var playlistToDelete = context.Playlists.FirstOrDefault(p => p.Id == 2);
+if (playlistToDelete != null)
+{
+    context.Playlists.Remove(playlistToDelete);
+    context.SaveChanges();
+}
+
+	4.5. Робота з навігаційними властивостями
+	
+// Отримати плейлісти разом з категоріями
+var playlistsWithCategory = context.Playlists
+    .Include(p => p.Category)
+    .ToList();
+
+foreach (var pl in playlistsWithCategory)
+{
+    Console.WriteLine($"{pl.Name} - {pl.Category?.Name}");
+}	
+
+Пояснення
+•	Add — додає новий об'єкт у базу.
+•	ToList — отримує всі записи з таблиці.
+•	FirstOrDefault — знаходить перший запис, що відповідає умові.
+•	SaveChanges — зберігає всі зміни у базі даних.
+•	Remove — видаляє об'єкт з бази.
+•	Include — дозволяє завантажити пов'язані дані (наприклад, категорію для плейліста).
+
+
 
 Міграція - це можливість гуманним чином змінити базу даних, оновити колонки і т.д. без видаленням вже існуючої інформації
 
@@ -4096,13 +4607,230 @@ update-database    - вносить зміни в базу данних
 
 
 
-Завдання 1:
-За основу взяти базу даних «Музикальна колеція» з попередніх завданння та використовуючи механізм міграцій реалізувати наступні можливості:
-• Зберігати рейтинг кожного трека та всього альбома вцілому
-• Зберігати кількість прослуховувань певного трека
-• Зберігати текст трека, якщо він присутній
-Завдання 2:
-Використовуючи LINQ to Entity написати методи для виконання наступних операцій:
-1. Відображення треків певного альбома, кількість прослуховувань яких більша середнього значення по всіх треках даного альбома
-2. Відображення ТОП-3 треків та альбомів певного артиста по рейтингу
-3. Пошук трека по частині імені або уривку із текста
+
+
+ _       _____  _   _   ____
+| |     |_   _|| \ | | / __ \
+| |       | |  |  \| || |  | |
+| |       | |  | . ` || |  | |
+| |____  _| |_ | |\  || |__| |
+|______||_____||_| \_| \___\_\
+
+ _
+| |
+| |_   ___
+| __| / _ \
+| |_ | (_) |
+ \__| \___/
+
+ ______         _    _  _
+|  ____|       | |  (_)| |
+| |__    _ __  | |_  _ | |_  _   _
+|  __|  | '_ \ | __|| || __|| | | |
+| |____ | | | || |_ | || |_ | |_| |
+|______||_| |_| \__||_| \__| \__, |
+                              __/ |
+                             |___/
+
+	LINQ to Entity 
+
+— це технологія, яка дозволяє писати запити до бази даних у вигляді C#-коду, використовуючи синтаксис LINQ (Language Integrated Query) разом з Entity Framework.
+Вона автоматично перетворює ваші запити у SQL, виконує їх у базі даних і повертає результат у вигляді об'єктів сутностей.
+
+Як працює LINQ to Entity
+•	Ви працюєте з об'єктами (наприклад, DbSet<Track>, DbSet<Playlist>), а не з SQL-рядками.
+•	Запит пишеться як звичайний C#-код, але виконується на сервері бази даних.
+•	Підтримує фільтрацію, сортування, групування, об'єднання, агрегацію тощо.
+
+
+1. Основна структура LINQ-запиту
+LINQ to Entity дозволяє писати запити двома способами:
+•	Метод-синтаксис (найпопулярніший у сучасних проектах)
+•	Запит-синтаксис (схожий на SQL, але рідше використовується)
+
+Метод-синтаксис (Method Syntax)
+
+Використовує ланцюжок методів: Where, Select, OrderBy, Include тощо.
+Приклад:
+
+var tracks = context.Tracks
+    .Where(t => t.Rating > 3)
+    .OrderByDescending(t => t.Rating)
+    .ToList();
+	
+Запит-синтаксис (Query Syntax)
+
+Використовує ключові слова: from, where, select, join тощо.
+Приклад:
+
+var tracks = (from t in context.Tracks
+              where t.Rating > 3
+              orderby t.Rating descending
+              select t).ToList();
+
+
+	далі на основі Метод-синтаксис (Method Syntax)
+
+	1. Джерело даних
+Це об'єкт типу DbSet<T>, наприклад:
+•	context.Tracks
+•	context.Playlists
+•	context.PlaylistTracks
+Всі запити починаються з джерела даних.
+
+
+	2. Фільтрація (Where)
+Вибирає тільки ті елементи, які відповідають умові.
+Приклад:
+Вибрати всі треки з рейтингом більше 3:
+
+var tracks = context.Tracks
+    .Where(t => t.Rating > 3)
+    .ToList();
+
+	3. Сортування (OrderBy, OrderByDescending)
+Впорядковує результати за певним полем.
+Приклад:
+Відсортувати треки за тривалістю:
+
+var tracks = context.Tracks
+    .OrderBy(t => t.DurationSeconds)
+    .ToList();
+
+	4. Вибірка (Select)
+Вибирає тільки потрібні поля або створює новий об'єкт.
+Приклад:
+Вибрати тільки назви треків:
+
+var titles = context.Tracks
+    .Select(t => t.Title)
+    .ToList();
+	
+	5. Групування (GroupBy)
+Групує елементи за певним критерієм.
+Приклад:
+Групувати треки за альбомом:
+
+var grouped = context.Tracks
+    .GroupBy(t => t.AlbumId)
+    .Select(g => new { AlbumId = g.Key, Count = g.Count() })
+    .ToList();
+	
+	6. Об'єднання (Include)
+Об'єднує дані з різних сутностей.
+Include — Завантажує пов’язані дані (навігаційні властивості).
+Приклад:
+Завантажити плейлісти разом з треками:
+
+var playlists = context.Playlists
+    .Include(p => p.PlaylistTracks)
+    .ThenInclude(pt => pt.Track)
+    .ToList();
+	
+	7. Агрегація (Count, Sum, Average, Min, Max)
+Count — кількість елементів:
+
+int count = context.PlaylistTracks.Count(pt => pt.PlaylistId == playlistId);
+
+
+	Sum — сума значень:
+
+int totalDuration = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Sum(pt => pt.Track.DurationSeconds);
+
+	
+	Average — середнє значення:	
+
+double avgRating = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Average(pt => pt.Track.Rating);
+	
+	
+	Min/Max — мінімальне/максимальне значення:
+
+int minRating = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Min(pt => pt.Track.Rating);
+
+int maxRating = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Max(pt => pt.Track.Rating);
+
+
+	8. Вибірка одного елемента (FirstOrDefault, SingleOrDefault)
+FirstOrDefault — повертає перший знайдений або null:
+
+var firstTrack = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Select(pt => pt.Track)
+    .FirstOrDefault();
+	
+	
+SingleOrDefault — повертає єдиний елемент або null:
+
+	var singleTrack = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId && pt.TrackId == trackId)
+    .Select(pt => pt.Track)
+    .SingleOrDefault();
+
+
+Приклад:
+
+var trackTitles = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Select(pt => pt.Track)
+    .OrderByDescending(t => t.Rating)
+    .Select(t => t.Title)
+    .ToList();
+	
+.Where(pt => pt.PlaylistId == playlistId) - 
+•	pt — це один елемент з колекції PlaylistTracks, тобто один об'єкт типу PlaylistTrack.
+•	Вираз pt => pt.PlaylistId == playlistId означає: "вибрати ті об'єкти PlaylistTrack, у яких поле PlaylistId дорівнює значенню playlistId".
+
+.Select(pt => pt.Track)
+•	З кожного відібраного pt (PlaylistTrack) береться його властивість Track (це об'єкт типу Track).
+•	Тепер у колекції — вже не PlaylistTrack, а Track.
+
+.OrderByDescending(t => t.Rating)
+•	t — це один елемент з колекції Track (яку отримали на попередньому кроці).
+•	Вираз t => t.Rating означає: "сортувати треки за рейтингом у спадному порядку".
+
+.Select(t => t.Title)
+•	З кожного треку (t) береться його властивість Title (назва треку).
+•	Тепер у колекції — вже не Track, а просто рядки (назви треків).
+
+.ToList()
+•	Перетворює результат у список назв треків.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
