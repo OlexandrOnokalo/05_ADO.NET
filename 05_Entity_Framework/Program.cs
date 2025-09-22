@@ -14,42 +14,93 @@ namespace _05_Entity_Framework
         static void Main(string[] args)
         {
             using var context = new MusicDbContext();
-            context.Database.
 
 
-            //Console.WriteLine("Seeded playlists:");
-            //var seeded = context.Playlists.Include(p => p.Category).ToList();
-            //foreach (var p in seeded)
-            //{
-            //    Console.WriteLine($"{p.Id}: {p.Name} [{p.Category?.Name}]");
-            //}
+
+
+
+            var rnd = new Random();
 
             
-            //var newPlaylist = new Playlist { Name = "My Custom List", CategoryId = 4 };
-            //context.Playlists.Add(newPlaylist);
-            //context.SaveChanges();
-            //Console.WriteLine($"Created playlist with Id = {newPlaylist.Id}");
+            var tracks1 = context.Tracks.ToList();
+            foreach (var track in tracks1)
+            {
+                track.Listens = rnd.Next(100, 10000);
+                track.Rating = rnd.Next(1, 6);       
+            }
 
             
-            //var firstTwo = context.Tracks.Take(2).ToList();
-            //foreach (var t in firstTwo)
-            //{
-            //    context.PlaylistTracks.Add(new PlaylistTrack { PlaylistId = newPlaylist.Id, TrackId = t.Id });
-            //}
-            //context.SaveChanges();
-            //Console.WriteLine("Added tracks to the new playlist.");
+            var albums = context.Albums.ToList();
+            foreach (var album in albums)
+            {
+                album.Rating = rnd.Next(1, 6);        
+            }
+
+            context.SaveChanges();
+
+
+
+
+
+
+
+            int albumId = 1; 
+            var avgListens = context.Tracks
+                .Where(t => t.AlbumId == albumId)
+                .Average(t => t.Listens);
+
+            var tracksAboveAvg = context.Tracks
+                .Where(t => t.AlbumId == albumId && t.Listens > avgListens)
+                .ToList();
+
+            Console.WriteLine("Треки альбома з кількістю прослуховувань більше середнього:");
+            foreach (var track in tracksAboveAvg)
+            {
+                Console.WriteLine($"- {track.Title} ({track.Listens} прослуховувань)");
+            }
+            Console.WriteLine();
 
             
-            //var loaded = context.Playlists
-            //    .Where(p => p.Id == newPlaylist.Id)
-            //    .Include(p => p.PlaylistTracks).ThenInclude(pt => pt.Track)
-            //    .FirstOrDefault();
+            int artistId = 1; 
 
-            //Console.WriteLine($"Playlist: {loaded.Name}");
-            //foreach (var pt in loaded.PlaylistTracks)
-            //{
-            //    Console.WriteLine($" - {pt.Track.Title} ({pt.Track.DurationSeconds}s)");
-            //}
+            var topTracks = context.Tracks
+                .Where(t => t.Album.ArtistId == artistId)
+                .OrderByDescending(t => t.Rating)
+                .Take(3)
+                .ToList();
+
+            Console.WriteLine("ТОП-3 треки артиста за рейтингом:");
+            foreach (var track in topTracks)
+            {
+                Console.WriteLine($"- {track.Title} (Рейтинг: {track.Rating})");
+            }
+            Console.WriteLine();
+
+            var topAlbums = context.Albums
+                .Where(a => a.ArtistId == artistId)
+                .OrderByDescending(a => a.Rating)
+                .Take(3)
+                .ToList();
+
+            Console.WriteLine("ТОП-3 альбоми артиста за рейтингом:");
+            foreach (var album in topAlbums)
+            {
+                Console.WriteLine($"- {album.Title} (Рейтинг: {album.Rating})");
+            }
+            Console.WriteLine();
+
+            
+            string search = "love"; 
+
+            var foundTracks = context.Tracks
+                .Where(t => t.Title.Contains(search) || (t.Lyrics != null && t.Lyrics.Contains(search)))
+                .ToList();
+
+            Console.WriteLine($"Результати пошуку треків за запитом \"{search}\":");
+            foreach (var track in foundTracks)
+            {
+                Console.WriteLine($"- {track.Title} (Lyrics: {track.Lyrics})");
+            }
         }
     }
 }
