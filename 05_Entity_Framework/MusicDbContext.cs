@@ -8,14 +8,14 @@ namespace _05_Entity_Framework
         public MusicDbContext()
         {
 
-            this.Database.EnsureDeleted();
-            this.Database.EnsureCreated();
+            //this.Database.EnsureDeleted();
+            //this.Database.EnsureCreated();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlServer(@"Data Source=PULSE\SQLEXPRESS;
+            optionsBuilder.UseSqlServer(@"Data Source=(localDB)\MSSQLLocalDb;
                                         Initial Catalog=MusicAppDb;
                                         Integrated Security=True;
                                         Connect Timeout=5;

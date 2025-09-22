@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Text;
 
 namespace _05_Entity_Framework
 {
@@ -14,7 +15,7 @@ namespace _05_Entity_Framework
         static void Main(string[] args)
         {
             using var context = new MusicDbContext();
-
+            Console.OutputEncoding = Encoding.UTF8;
 
 
 

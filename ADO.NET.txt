@@ -4805,6 +4805,41 @@ var trackTitles = context.PlaylistTracks
 
 
 
+========================================================
+07_Fluent_API  i data annotation
+
+ ______  _                      _
+|  ____|| |                    | |
+| |__   | | _   _   ___  _ __  | |_
+|  __|  | || | | | / _ \| '_ \ | __|
+| |     | || |_| ||  __/| | | || |_
+|_|     |_| \__,_| \___||_| |_| \__|
+           _____   _____
+    /\    |  __ \ |_   _|
+   /  \   | |__) |  | |
+  / /\ \  |  ___/   | |
+ / ____ \ | |      _| |_
+/_/    \_\|_|     |_____|
+
+Fluent API - можливість винести data anotation в одне місце
++ модельки будуть чисті
++ можна ясно прописати звязки між класами (в data annotation чітко не пропишеш)
+
+
+в контексті
+
+modelBuilder.Entity<Airplane>().HasKey(a=>a.Id); - primary key
+modelBuilder.Entity<Airplane>().ToTable("Plane"); - name table
+
+???
+modelBuilder.Entity<Airplane>().Property(a=>a.Model); - 
+?????
+
+
+
+
+
+
 
 
 
