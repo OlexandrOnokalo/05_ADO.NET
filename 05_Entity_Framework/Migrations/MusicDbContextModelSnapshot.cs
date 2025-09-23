@@ -52,7 +52,7 @@ namespace _05_Entity_Framework.Migrations
 
                     b.HasIndex("GenreId");
 
-                    b.ToTable("Albums");
+                    b.ToTable("Albums", (string)null);
 
                     b.HasData(
                         new
@@ -136,7 +136,7 @@ namespace _05_Entity_Framework.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.ToTable("Artists");
+                    b.ToTable("Artists", (string)null);
 
                     b.HasData(
                         new
@@ -191,7 +191,7 @@ namespace _05_Entity_Framework.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -231,7 +231,7 @@ namespace _05_Entity_Framework.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Countries");
+                    b.ToTable("Countries", (string)null);
 
                     b.HasData(
                         new
@@ -276,7 +276,7 @@ namespace _05_Entity_Framework.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Genres");
+                    b.ToTable("Genres", (string)null);
 
                     b.HasData(
                         new
@@ -331,7 +331,7 @@ namespace _05_Entity_Framework.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Playlists");
+                    b.ToTable("Playlists", (string)null);
 
                     b.HasData(
                         new
@@ -366,7 +366,7 @@ namespace _05_Entity_Framework.Migrations
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("PlaylistTracks");
+                    b.ToTable("PlaylistTracks", (string)null);
 
                     b.HasData(
                         new
@@ -459,7 +459,7 @@ namespace _05_Entity_Framework.Migrations
 
                     b.HasIndex("AlbumId");
 
-                    b.ToTable("Tracks");
+                    b.ToTable("Tracks", (string)null);
 
                     b.HasData(
                         new
@@ -606,7 +606,8 @@ namespace _05_Entity_Framework.Migrations
                 {
                     b.HasOne("_05_Entity_Framework.Entytis.Category", "Category")
                         .WithMany("Playlists")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Category");
                 });
