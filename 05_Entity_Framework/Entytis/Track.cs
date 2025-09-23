@@ -6,10 +6,10 @@ namespace _05_Entity_Framework.Entytis
     [Table("Tracks")]
     class Track
     {
-        [Key]
+        
         public int Id { get; set; }
 
-        [Required, MaxLength(200)]
+        
         public string Title { get; set; }
 
         public int AlbumId { get; set; }
@@ -21,7 +21,7 @@ namespace _05_Entity_Framework.Entytis
         public int Rating { get; set; }
 
         public int Listens { get; set; }
-        [MaxLength(200)]
+        
         public string? Lyrics { get; set; }
 
         public ICollection<PlaylistTrack> PlaylistTracks { get; set; }

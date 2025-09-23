@@ -9,10 +9,10 @@ namespace _05_Entity_Framework.Entytis
         [Key]
         public int Id { get; set; }
 
-        [Required, MaxLength(100)]
+        
         public string FirstName { get; set; }
 
-        [Required, MaxLength(100)]
+        
         public string LastName { get; set; }
 
         

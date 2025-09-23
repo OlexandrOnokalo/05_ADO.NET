@@ -6,10 +6,10 @@ namespace _05_Entity_Framework.Entytis
     [Table("Albums")]
     class Album
     {
-        [Key]
+        
         public int Id { get; set; }
 
-        [Required, MaxLength(200)]
+        
         public string Title { get; set; }
 
         public int ArtistId { get; set; }
