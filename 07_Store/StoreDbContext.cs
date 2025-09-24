@@ -17,7 +17,7 @@ namespace _07_Store
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlServer(@"Data Source=PULSE\SQLEXPRESS;
+            optionsBuilder.UseSqlServer(@"Data Source=(localDB)\MSSQLLocalDb;
                                         Initial Catalog=StoreAppDb;
                                         Integrated Security=True;
                                         Connect Timeout=5;

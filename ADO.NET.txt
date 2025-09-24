@@ -4630,205 +4630,6 @@ add-migration Initial   (інітіал це назва, внятно пропи
 update-database    - вносить зміни в базу данних
 
 
-
-
-
- _       _____  _   _   ____
-| |     |_   _|| \ | | / __ \
-| |       | |  |  \| || |  | |
-| |       | |  | . ` || |  | |
-| |____  _| |_ | |\  || |__| |
-|______||_____||_| \_| \___\_\
-
- _
-| |
-| |_   ___
-| __| / _ \
-| |_ | (_) |
- \__| \___/
-
- ______         _    _  _
-|  ____|       | |  (_)| |
-| |__    _ __  | |_  _ | |_  _   _
-|  __|  | '_ \ | __|| || __|| | | |
-| |____ | | | || |_ | || |_ | |_| |
-|______||_| |_| \__||_| \__| \__, |
-                              __/ |
-                             |___/
-
-	LINQ to Entity 
-
-— це технологія, яка дозволяє писати запити до бази даних у вигляді C#-коду, використовуючи синтаксис LINQ (Language Integrated Query) разом з Entity Framework.
-Вона автоматично перетворює ваші запити у SQL, виконує їх у базі даних і повертає результат у вигляді об'єктів сутностей.
-
-Як працює LINQ to Entity
-•	Ви працюєте з об'єктами (наприклад, DbSet<Track>, DbSet<Playlist>), а не з SQL-рядками.
-•	Запит пишеться як звичайний C#-код, але виконується на сервері бази даних.
-•	Підтримує фільтрацію, сортування, групування, об'єднання, агрегацію тощо.
-
-
-1. Основна структура LINQ-запиту
-LINQ to Entity дозволяє писати запити двома способами:
-•	Метод-синтаксис (найпопулярніший у сучасних проектах)
-•	Запит-синтаксис (схожий на SQL, але рідше використовується)
-
-Метод-синтаксис (Method Syntax)
-
-Використовує ланцюжок методів: Where, Select, OrderBy, Include тощо.
-Приклад:
-
-var tracks = context.Tracks
-    .Where(t => t.Rating > 3)
-    .OrderByDescending(t => t.Rating)
-    .ToList();
-	
-Запит-синтаксис (Query Syntax)
-
-Використовує ключові слова: from, where, select, join тощо.
-Приклад:
-
-var tracks = (from t in context.Tracks
-              where t.Rating > 3
-              orderby t.Rating descending
-              select t).ToList();
-
-
-	далі на основі Метод-синтаксис (Method Syntax)
-
-	1. Джерело даних
-Це об'єкт типу DbSet<T>, наприклад:
-•	context.Tracks
-•	context.Playlists
-•	context.PlaylistTracks
-Всі запити починаються з джерела даних.
-
-
-	2. Фільтрація (Where)
-Вибирає тільки ті елементи, які відповідають умові.
-Приклад:
-Вибрати всі треки з рейтингом більше 3:
-
-var tracks = context.Tracks
-    .Where(t => t.Rating > 3)
-    .ToList();
-
-	3. Сортування (OrderBy, OrderByDescending)
-Впорядковує результати за певним полем.
-Приклад:
-Відсортувати треки за тривалістю:
-
-var tracks = context.Tracks
-    .OrderBy(t => t.DurationSeconds)
-    .ToList();
-
-	4. Вибірка (Select)
-Вибирає тільки потрібні поля або створює новий об'єкт.
-Приклад:
-Вибрати тільки назви треків:
-
-var titles = context.Tracks
-    .Select(t => t.Title)
-    .ToList();
-	
-	5. Групування (GroupBy)
-Групує елементи за певним критерієм.
-Приклад:
-Групувати треки за альбомом:
-
-var grouped = context.Tracks
-    .GroupBy(t => t.AlbumId)
-    .Select(g => new { AlbumId = g.Key, Count = g.Count() })
-    .ToList();
-	
-	6. Об'єднання (Include)
-Об'єднує дані з різних сутностей.
-Include — Завантажує пов’язані дані (навігаційні властивості).
-Приклад:
-Завантажити плейлісти разом з треками:
-
-var playlists = context.Playlists
-    .Include(p => p.PlaylistTracks)
-    .ThenInclude(pt => pt.Track)
-    .ToList();
-	
-	7. Агрегація (Count, Sum, Average, Min, Max)
-Count — кількість елементів:
-
-int count = context.PlaylistTracks.Count(pt => pt.PlaylistId == playlistId);
-
-
-	Sum — сума значень:
-
-int totalDuration = context.PlaylistTracks
-    .Where(pt => pt.PlaylistId == playlistId)
-    .Sum(pt => pt.Track.DurationSeconds);
-
-	
-	Average — середнє значення:	
-
-double avgRating = context.PlaylistTracks
-    .Where(pt => pt.PlaylistId == playlistId)
-    .Average(pt => pt.Track.Rating);
-	
-	
-	Min/Max — мінімальне/максимальне значення:
-
-int minRating = context.PlaylistTracks
-    .Where(pt => pt.PlaylistId == playlistId)
-    .Min(pt => pt.Track.Rating);
-
-int maxRating = context.PlaylistTracks
-    .Where(pt => pt.PlaylistId == playlistId)
-    .Max(pt => pt.Track.Rating);
-
-
-	8. Вибірка одного елемента (FirstOrDefault, SingleOrDefault)
-FirstOrDefault — повертає перший знайдений або null:
-
-var firstTrack = context.PlaylistTracks
-    .Where(pt => pt.PlaylistId == playlistId)
-    .Select(pt => pt.Track)
-    .FirstOrDefault();
-	
-	
-SingleOrDefault — повертає єдиний елемент або null:
-
-	var singleTrack = context.PlaylistTracks
-    .Where(pt => pt.PlaylistId == playlistId && pt.TrackId == trackId)
-    .Select(pt => pt.Track)
-    .SingleOrDefault();
-
-
-Приклад:
-
-var trackTitles = context.PlaylistTracks
-    .Where(pt => pt.PlaylistId == playlistId)
-    .Select(pt => pt.Track)
-    .OrderByDescending(t => t.Rating)
-    .Select(t => t.Title)
-    .ToList();
-	
-.Where(pt => pt.PlaylistId == playlistId) - 
-•	pt — це один елемент з колекції PlaylistTracks, тобто один об'єкт типу PlaylistTrack.
-•	Вираз pt => pt.PlaylistId == playlistId означає: "вибрати ті об'єкти PlaylistTrack, у яких поле PlaylistId дорівнює значенню playlistId".
-
-.Select(pt => pt.Track)
-•	З кожного відібраного pt (PlaylistTrack) береться його властивість Track (це об'єкт типу Track).
-•	Тепер у колекції — вже не PlaylistTrack, а Track.
-
-.OrderByDescending(t => t.Rating)
-•	t — це один елемент з колекції Track (яку отримали на попередньому кроці).
-•	Вираз t => t.Rating означає: "сортувати треки за рейтингом у спадному порядку".
-
-.Select(t => t.Title)
-•	З кожного треку (t) береться його властивість Title (назва треку).
-•	Тепер у колекції — вже не Track, а просто рядки (назви треків).
-
-.ToList()
-•	Перетворює результат у список назв треків.
-
-
-
 ========================================================
 07_Fluent_API  i data annotation
 
@@ -4978,11 +4779,265 @@ namespace _05_Entity_Framework.Helpers
 
 і так далі
 
+========================================================
+08_LINQ_to_Entity
+
+_       _____  _   _   ____
+| |     |_   _|| \ | | / __ \
+| |       | |  |  \| || |  | |
+| |       | |  | . ` || |  | |
+| |____  _| |_ | |\  || |__| |
+|______||_____||_| \_| \___\_\
+
+ _
+| |
+| |_   ___
+| __| / _ \
+| |_ | (_) |
+ \__| \___/
+
+ ______         _    _  _
+|  ____|       | |  (_)| |
+| |__    _ __  | |_  _ | |_  _   _
+|  __|  | '_ \ | __|| || __|| | | |
+| |____ | | | || |_ | || |_ | |_| |
+|______||_| |_| \__||_| \__| \__, |
+                              __/ |
+                             |___/
+
+	LINQ to Entity 
+
+— це технологія, яка дозволяє писати запити до бази даних у вигляді C#-коду, використовуючи синтаксис LINQ (Language Integrated Query) разом з Entity Framework.
+Вона автоматично перетворює ваші запити у SQL, виконує їх у базі даних і повертає результат у вигляді об'єктів сутностей.
+
+Як працює LINQ to Entity
+•	Ви працюєте з об'єктами (наприклад, DbSet<Track>, DbSet<Playlist>), а не з SQL-рядками.
+•	Запит пишеться як звичайний C#-код, але виконується на сервері бази даних.
+•	Підтримує фільтрацію, сортування, групування, об'єднання, агрегацію тощо.
+
+
+1. Основна структура LINQ-запиту
+LINQ to Entity дозволяє писати запити двома способами:
+•	Метод-синтаксис (найпопулярніший у сучасних проектах)
+•	Запит-синтаксис (схожий на SQL, але рідше використовується)
+
+Метод-синтаксис (Method Syntax)
+
+Використовує ланцюжок методів: Where, Select, OrderBy, Include тощо.
+Приклад:
+
+var tracks = context.Tracks
+    .Where(t => t.Rating > 3)
+    .OrderByDescending(t => t.Rating)
+    .ToList();
+	
+Запит-синтаксис (Query Syntax)
+
+Використовує ключові слова: from, where, select, join тощо.
+Приклад:
+
+var tracks = (from t in context.Tracks
+              where t.Rating > 3
+              orderby t.Rating descending
+              select t).ToList();
+
+
+	далі на основі Метод-синтаксис (Method Syntax)
+
+
+
+	1. Джерело даних
+Це об'єкт типу DbSet<T>, наприклад:
+•	context.Tracks
+•	context.Playlists
+•	context.PlaylistTracks
+Всі запити починаються з джерела даних.
 
 
 
 
+	2. Фільтрація (Where)
+Вибирає тільки ті елементи, які відповідають умові.
+Приклад:
+Вибрати всі треки з рейтингом більше 3:
 
+var tracks = context.Tracks
+    .Where(t => t.Rating > 3)
+    .ToList();
+
+
+
+	3. Сортування (OrderBy, OrderByDescending)
+Впорядковує результати за певним полем.
+Приклад:
+Відсортувати треки за тривалістю:
+
+var tracks = context.Tracks
+    .OrderBy(t => t.DurationSeconds)
+    .ToList();
+
+
+
+	4. Вибірка (Select)
+Вибирає тільки потрібні поля або створює новий об'єкт.
+Приклад:
+Вибрати тільки назви треків:
+
+var titles = context.Tracks
+    .Select(t => t.Title)
+    .ToList();
+	
+	
+	
+	5. Групування (GroupBy)
+Групує елементи за певним критерієм.
+Приклад:
+Групувати треки за альбомом:
+
+var grouped = context.Tracks
+    .GroupBy(t => t.AlbumId)
+    .Select(g => new { AlbumId = g.Key, Count = g.Count() })
+    .ToList();
+	
+	
+	
+	
+	6. Об'єднання (Include)
+Об'єднує дані з різних сутностей.
+Include — Завантажує пов’язані дані (навігаційні властивості).
+Приклад:
+Завантажити плейлісти разом з треками:
+
+var playlists = context.Playlists
+    .Include(p => p.PlaylistTracks)
+    .ThenInclude(pt => pt.Track)
+    .ToList();
+	
+ _____               _             _
+|_   _|             | |           | |
+  | |   _ __    ___ | | _   _   __| |  ___
+  | |  | '_ \  / __|| || | | | / _` | / _ \
+ _| |_ | | | || (__ | || |_| || (_| ||  __/
+|_____||_| |_| \___||_| \__,_| \__,_| \___|
+https://ru.rakko.tools/tools/68/
+
+	
+	JOIN = Include
+	
+var flight = context.Flights
+		.Include(f=>f.Airplane) -  JOIN Airplane 
+		.Where(f=>f.ArrivalCity == "Lviv")
+		.OrderBy(f=>f.DepartureTime);
+	
+	просто инклюд - тягне всю таблицю з усіма данними
+		а можна зробити:
+	
+!!! 	явна підгрузка даних для окремого обєкта
+		Explicit loading data : 
+		//Context.Entry(entity).Collection\Reference.Load
+
+
+	Client cl=context.Clients.Find(3)  - id=3
+	context.Entry(cl).Collection(cl=>cl.Flights).Load(); 
+	
+		(.Collection коли багато, Referense коли один)
+	
+	І тепер в cl є таблиця Clients і таблиця Flights
+	звертаємось:
+	
+	до кліентс -   cl?.name (одразу назву змінної після точки)
+	до Flights -   cl?.Flights.Count  (спочатку вказуємо обєкт, потім таблицю, а вже потім змінну)
+	
+	
+	
+	
+	
+	7. Агрегація (Count, Sum, Average, Min, Max)
+Count — кількість елементів:
+
+int count = context.PlaylistTracks.Count(pt => pt.PlaylistId == playlistId);
+
+
+	Sum — сума значень:
+
+int totalDuration = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Sum(pt => pt.Track.DurationSeconds);
+
+	
+	Average — середнє значення:	
+
+double avgRating = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Average(pt => pt.Track.Rating);
+	
+	
+	Min/Max — мінімальне/максимальне значення:
+
+int minRating = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Min(pt => pt.Track.Rating);
+
+int maxRating = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Max(pt => pt.Track.Rating);
+
+
+
+	8. Вибірка одного елемента (FirstOrDefault, SingleOrDefault)
+FirstOrDefault — повертає перший знайдений або null:
+
+var firstTrack = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Select(pt => pt.Track)
+    .FirstOrDefault();
+	
+	
+SingleOrDefault — повертає єдиний елемент або null:
+
+	var singleTrack = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId && pt.TrackId == trackId)
+    .Select(pt => pt.Track)
+    .SingleOrDefault();
+
+
+Приклад:
+
+var trackTitles = context.PlaylistTracks
+    .Where(pt => pt.PlaylistId == playlistId)
+    .Select(pt => pt.Track)
+    .OrderByDescending(t => t.Rating)
+    .Select(t => t.Title)
+    .ToList();
+	
+.Where(pt => pt.PlaylistId == playlistId) - 
+•	pt — це один елемент з колекції PlaylistTracks, тобто один об'єкт типу PlaylistTrack.
+•	Вираз pt => pt.PlaylistId == playlistId означає: "вибрати ті об'єкти PlaylistTrack, у яких поле PlaylistId дорівнює значенню playlistId".
+
+.Select(pt => pt.Track)
+•	З кожного відібраного pt (PlaylistTrack) береться його властивість Track (це об'єкт типу Track).
+•	Тепер у колекції — вже не PlaylistTrack, а Track.
+
+.OrderByDescending(t => t.Rating)
+•	t — це один елемент з колекції Track (яку отримали на попередньому кроці).
+•	Вираз t => t.Rating означає: "сортувати треки за рейтингом у спадному порядку".
+
+.Select(t => t.Title)
+•	З кожного треку (t) береться його властивість Title (назва треку).
+•	Тепер у колекції — вже не Track, а просто рядки (назви треків).
+
+.ToList()
+•	Перетворює результат у список назв треків.
+
+
+
+
+diagram
+
+пакети в модіфай
+
+class diagrams
+sql все
 
 
 
